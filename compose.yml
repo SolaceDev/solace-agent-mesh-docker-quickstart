@@ -76,28 +76,20 @@ services:
       SOLACE_BROKER_PASSWORD: ${BROKER_PASSWORD}
       SOLACE_BROKER_VPN: ${BROKER_VPN}
       CONTAINER_ENGINE: ${CONTAINER_ENGINE:-docker}
+      DEPLOYMENT_ENV: docker_quickstart
+      HOME: ${HOME}
       DEPLOY_COMMAND: >
-        cp /app/agent.env ${HOME}/.sam-deployer/agent-{{ id }}.env &&
-        echo '{{ values }}' >> ${HOME}/.sam-deployer/agent-{{ id }}.env &&
-        chmod 666 ${HOME}/.sam-deployer/agent-{{ id }}.env &&
-        echo '{{ configurationFile }}' > ${HOME}/.sam-deployer/agent-{{ id }}.yaml &&
-        chmod 666 ${HOME}/.sam-deployer/agent-{{ id }}.yaml &&
         ${CONTAINER_ENGINE:-docker} run -itd --network sam
-        -v ${HOME}/.sam-deployer/agent-{{ id }}.yaml:/agent.yaml
-        --env-file ${HOME}/.sam-deployer/agent-{{ id }}.env
+        -v {{ agentYamlPath }}:/agent.yaml
+        --env-file {{ envFilePath }}
         --name agent-{{ id }}
         ${SAM_IMAGE}:${SAM_TAG} run /agent.yaml
       UPDATE_COMMAND: >
         ${CONTAINER_ENGINE:-docker} stop agent-{{ id }} &&
         ${CONTAINER_ENGINE:-docker} rm agent-{{ id }} &&
-        cp /app/agent.env ${HOME}/.sam-deployer/agent-{{ id }}.env &&
-        echo '{{ values }}' >> ${HOME}/.sam-deployer/agent-{{ id }}.env &&
-        chmod 666 ${HOME}/.sam-deployer/agent-{{ id }}.env &&
-        echo '{{ configurationFile }}' > ${HOME}/.sam-deployer/agent-{{ id }}.yaml &&
-        chmod 666 ${HOME}/.sam-deployer/agent-{{ id }}.yaml &&
         ${CONTAINER_ENGINE:-docker} run -itd --network sam
-        -v ${HOME}/.sam-deployer/agent-{{ id }}.yaml:/agent.yaml
-        --env-file ${HOME}/.sam-deployer/agent-{{ id }}.env
+        -v {{ agentYamlPath }}:/agent.yaml
+        --env-file {{ envFilePath }}
         --name agent-{{ id }}
         ${SAM_IMAGE}:${SAM_TAG} run /agent.yaml
       STATUS_COMMAND: "${CONTAINER_ENGINE:-docker} inspect agent-{{ id }}"
