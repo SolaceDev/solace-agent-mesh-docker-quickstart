@@ -46,9 +46,14 @@ services:
       sh -c "
       echo 'Waiting for Solace to be ready...' &&
       sleep 1 &&
-      echo 'Creating user via REST API...' &&
-      curl -f -X POST 'http://broker:8080/SEMP/v2/config/msgVpns/default/clientUsernames' -H 'Content-Type: application/json' -H 'Authorization: Basic YWRtaW46YWRtaW4=' -d '{\"clientUsername\": \"client\", \"password\": \"password\", \"enabled\": true}' &&
-      echo 'User creation completed!'
+      echo 'Checking if user exists...' &&
+      if curl -s -u admin:admin 'http://broker:8080/SEMP/v2/config/msgVpns/default/clientUsernames/client' | grep -q '\"clientUsername\":\"client\"'; then
+        echo 'User already exists, skipping creation.';
+      else
+        echo 'Creating user via REST API...' &&
+        curl -f -X POST 'http://broker:8080/SEMP/v2/config/msgVpns/default/clientUsernames' -H 'Content-Type: application/json' -H 'Authorization: Basic YWRtaW46YWRtaW4=' -d '{\"clientUsername\": \"client\", \"password\": \"password\", \"enabled\": true}' &&
+        echo 'User creation completed!';
+      fi
       "
     restart: "no"
 
